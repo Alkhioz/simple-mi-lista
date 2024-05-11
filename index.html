@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Mi lista</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 100%;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        select,
+        textarea,
+        input,
+        button {
+            font: inherit;
+            letter-spacing: inherit;
+            word-spacing: inherit;
+        }
+
+        body {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            place-items: center;
+        }
+
+        header,
+        main {
+            width: 100%;
+            max-width: 600px;
+            padding: .5rem;
+        }
+
+        form {
+            width: 100%;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: .5rem;
+        }
+
+        button {
+            padding: .5rem;
+            background-color: rgb(7, 7, 76);
+            color: rgb(234, 236, 226);
+            font-size: larger;
+            font-weight: bolder;
+            border: 1px solid rgb(246, 172, 75);
+        }
+
+        fieldset {
+            width: 100%;
+            padding: .5rem;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: .5rem;
+        }
+
+        fieldset>label {
+            font-size: larger;
+            font-weight: bolder;
+        }
+
+        fieldset>input {
+            font-size: larger;
+            padding: .5rem;
+        }
+
+        legend {
+            font-size: larger;
+            font-weight: bolder;
+        }
+
+        h1 {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        
+        #list {
+            max-width: 400px;
+        }
+
+        #list>li {
+            padding: .5rem;
+            font-size: larger;
+            display: flex;
+            justify-items: center;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        #list>li>div>input {
+            width: 2rem;
+            height: 2rem;
+            margin-left: auto;
+        }
+        
+        #list>li>div {
+            flex-grow: 1;
+            display: flex;
+        }
+
+        #save-action {
+            background-color: rgb(3, 42, 3);
+        }
+        #clear-action {
+            background-color: rgb(85, 9, 9);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <form id='form' action='javascript:void(0);'>
+            <fieldset>
+                <legend>Item nuevo:</legend>
+                <label for='item'>Nombre:</label>
+                <input type='text' id='item' name='item'>
+                <label for='quantity'>Cantidad</label>
+                <input type='number' value='1' id='quantity' name='quantity'>
+            </fieldset>
+            <button id='add-action' name='add-action'>Agregar</button>
+        </form>
+    </header>
+    <main>
+        <h1>Lista:</h1>
+        <ul id="list" name="list"></ul>
+        <button type="button" id="save-action">Guardar Lista</button>
+        <button type="button" id="load-action">Cargar Lista</button>
+        <button type="button" id="clear-action">Limpiar Lista</button>
+    </main>
+    <script>
+        let nameElement = null;
+        let quantityElement = null;
+        let listElement = null;
+        let list = [];
+
+        const AddElement = (name, quantity) => {
+            if(name === '' || quantity <= 0) return false;
+            list.push({
+                name,
+                quantity,
+            });
+            const _list_item_element = document.createElement('li');
+            const _checkbox_container = document.createElement('div');
+            const _checkbox = document.createElement('input');
+            _checkbox.type = 'checkbox';
+            _checkbox.id = `${name}-${quantity}-checkbox`;
+            _checkbox.name = `${name}-${quantity}-checkbox`;
+            const _label_element = document.createElement('label');
+            _label_element.innerText = `● ${name} - ${quantity}:`;
+            _label_element.htmlFor = `${name}-${quantity}-checkbox`;
+            _checkbox_container.append(_checkbox);
+            _list_item_element.appendChild(_label_element);
+            _list_item_element.appendChild(_checkbox_container);
+            listElement.appendChild(_list_item_element);
+            nameElement.value = '';
+            quantityElement.value = '1';
+        }
+
+        const saveList = () => {
+            localStorage.setItem('mi-lista', JSON.stringify(list));
+        }
+
+        const getList = () => {
+            const _list = JSON.parse(localStorage.getItem('mi-lista'));
+            if(!Array.isArray(_list) || _list?.length === 0) return false;
+            clearList();
+            list = _list;
+            _list?.forEach(element=>AddElement(element.name, element.quantity));
+        }
+
+        const clearList = () => {
+            list = [];
+            listElement.innerHTML = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!nameElement) nameElement = document.querySelector('#item');
+            if (!quantityElement) quantityElement = document.querySelector('#quantity');
+            if (!listElement) listElement = document.querySelector('#list');
+            document.querySelector('#save-action').addEventListener('click', saveList);
+            document.querySelector('#load-action').addEventListener('click', getList);
+            document.querySelector('#clear-action').addEventListener('click', clearList);
+            const form = document.querySelector('#form').addEventListener('submit', (evt) => {
+                evt.preventDefault();
+                AddElement(nameElement.value, quantityElement.value);
+            })
+        });
+    </script>
+</body>
+
+</html>
